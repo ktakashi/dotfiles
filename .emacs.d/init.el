@@ -8,7 +8,4 @@
 		  "~/.emacs.d/conf")
 
 (load "init-basic")
-(load "init-auto-complete")
-(load "init-cmake")
-(load "init-gdb")
 (load "init-scheme")

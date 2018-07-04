@@ -34,6 +34,15 @@
 (setq user-full-name "Takashi Kato")
 (setq user-mail-address "ktakashi@ymail.com")
 
-;; auto install
-(require 'auto-install)
-(setq auto-install-directory "~/.emacs.d/elisp/")
+;; Melpa
+(require 'package)
+(let* ((no-ssl (and (memq system-type '(windows-nt ms-dos))
+                    (not (gnutls-available-p))))
+       (proto (if no-ssl "http" "https")))
+  (add-to-list 'package-archives
+	       (cons "melpa" (concat proto "://melpa.org/packages/")) t)
+  (when (< emacs-major-version 24)
+    ;; For important compatibility libraries like cl-lib
+    (add-to-list 'package-archives
+		 '("gnu" . (concat proto "://elpa.gnu.org/packages/")))))
+(package-initialize)
