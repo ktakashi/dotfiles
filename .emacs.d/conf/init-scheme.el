@@ -1,6 +1,47 @@
 (setq scheme-program-name "sash -i")
 (autoload 'scheme-mode "cmuscheme" "Major mode for Scheme." t)
 (autoload 'run-scheme "cmuscheme" "Run an inferior Scheme process." t)
+
+(require 'scheme)
+(require 'cl)
+
+(defun scheme:insert-export ()
+  (interactive)
+  (let ((sym (current-word))
+	(saved-pos (point)))
+    (goto-char (car (nth 9 (syntax-ppss))))
+    (let ((export-pos (search-forward "(export" nil t)))
+      (cl-labels ((flatten-rename (export)
+		    (mapcan (lambda (e)
+			      (if (and (listp e) (eq 'rename (car e)))
+				  (mapcar #'cadr (cdr e))
+				(list e))) 
+			    (cdr export)))
+		  (check-export ()
+		    (goto-char (- export-pos 7))
+		    (let ((exports (flatten-rename (read (current-buffer)))))
+		      (goto-char export-pos)
+		      (not (member (intern sym) exports))))
+		  (move-until-the-end ()
+		    (ignore-errors (while t (forward-sexp)))
+		    (point)))
+	(if export-pos
+	  (if (check-export)
+	      (let ((last (move-until-the-end)))
+		(message "Exporting %s `%s'" last sym)
+		(goto-char last)
+		(insert "\n" sym)
+		(let ((p (point)))
+		  (indent-for-tab-command)
+		  (setq saved-pos (+ saved-pos (string-width sym) 1
+				     (- (point) p)))))
+	    (message "Duplicate exort `%s`" sym))
+	  (message "No export clause found"))))
+    (goto-char saved-pos)
+    sym))
+
+(define-key scheme-mode-map "\M-\C-E" 'scheme:insert-export)
+
 (setq cmuscheme-load-hook
       '((lambda () (define-key inferior-scheme-mode-map "\C-c\C-t"
      'favorite-cmd))))
