@@ -26,9 +26,12 @@
 (column-number-mode t)
 (line-number-mode t)
 
-;; 80 x 40
+;; 2 panel with 80x66 (height should taken from available height, but I'm lazy)
 (if window-system
-    (setq initial-frame-alist '((width . 80) (height . 40))))
+    (when window-system
+      (setq initial-frame-alist '((width . 167) (height . 66)))
+      (split-window-horizontally)
+      ))
 
 ;; user info
 (setq user-full-name "Takashi Kato")
